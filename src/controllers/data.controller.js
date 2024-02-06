@@ -2,7 +2,7 @@ import {pool} from '../db.js'
 
 export const getDatas =async(req, res)=>{
     try {
-        const [rows]= await pool.query('SELECT * FROM dataInfo')
+        const [rows]= await pool.query('SELECT * FROM ContactUsForm')
         res.json(rows)
     } catch (error) {
         return res.status(500).json({message: 'Something goes wrong'})
@@ -12,7 +12,7 @@ export const getDatas =async(req, res)=>{
 export const getData =async(req, res)=>{
     try {
         const { id } = req.params;
-        const [rows]= await pool.query('SELECT * FROM dataInfo WHERE id=?', [req.params.id])
+        const [rows]= await pool.query('SELECT * FROM ContactUsForm WHERE id=?', [req.params.id])
     
         if(rows.length <=0)return res.status(404).json({
         message: 'Data no found'
@@ -25,34 +25,54 @@ export const getData =async(req, res)=>{
 }
 
 export const CreateData=async(req, res)=>{
-    const {name, email, phone, subjet, message}=req.body
+    const {Name, Email, Subject, PhoneNumber, Message}=req.body
     try {
-        const [rows] = await pool.query('INSERT INTO dataInfo (name, email, phone, subjet, message) VALUES (?, ?, ?, ?, ?)',[name, email, phone, subjet, message])
+        const [rows] = await pool.query('INSERT INTO ContactUsForm (Name, Email, Subject, PhoneNumber, Message) VALUES (?, ?, ?, ?, ?)',[Name, Email, Subject, PhoneNumber, Message])
         res.send({
         id: rows.insertId,
-        name,
-        email,
-        phone,
-        subjet,
-        message,
+        Name,
+        Email,
+        Subject,
+        PhoneNumber,
+        Message,
    })
     } catch (error) {
-        return res.status(500).json({message: 'Something goes wrong'})
+        return res.status(500).json({message: error})
     }
 }
 
-export const updateData=(req, res)=>{
+export const DeleteData=async(req, res)=>{
     try {
-        res.send('actualizando datos')
+        const [result] = await pool.query('DELETE FROM ContactUsForm WHERE id=?', [req.params.id])
+        if(result.affectedRows <= 0){
+            return res.status(404).json({message: 'Data no found'})
+        }
+        res.sendStatus(204)
     } catch (error) {
         return res.status(500).json({message: 'Something goes wrong'})
     }
 }
 
-export const DeleteData=(req, res)=>{
+export const updateData = async(req, res)=>{
     try {
-        res.send('eliminando datos')
-    } catch (error) {
-        return res.status(500).json({message: 'Something goes wrong'})
-    }
+        const { id } = req.params;
+        const {Name, Email, Subject, PhoneNumber, Message}=req.body
+    
+        const [result] = await pool.query(
+          "UPDATE ContactUsForm SET Name = IFNULL(?, Name), Email = IFNULL(?, Email), Subject= IFNULL(?, Subject),PhoneNumber = IFNULL(?, PhoneNumber), Message= IFNULL(?, Message)  WHERE id = ?",
+          [Name, Email, Subject, PhoneNumber, Message, id]
+        );
+    
+        if (result.affectedRows === 0)
+          return res.status(404).json({ message: "data not found" });
+    
+        const [rows] = await pool.query("SELECT * FROM ContactUsForm WHERE id = ?", [
+          id,
+        ]);
+    
+        res.json(rows[0]);
+      } catch (error) {
+        return res.status(500).json({ message: "Something goes wrong" });
+      }
 }
+

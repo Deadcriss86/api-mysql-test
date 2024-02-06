@@ -8,8 +8,8 @@ router.get('/data/:id', getData)
 
 router.post('/data', CreateData) 
 
-router.put('/data', updateData) 
+router.patch('/data/:id', updateData) 
 
-router.delete('/data', DeleteData) 
+router.delete('/data/:id', DeleteData) 
 
 export default router
