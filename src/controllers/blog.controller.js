@@ -11,9 +11,9 @@ export const getDatasBlog = async (req, res) => {
 
 export const getDataBlog = async (req, res) => {
   try {
-    const { PostID } = req.params;
-    const [rows] = await pool.query("SELECT * FROM Blog WHERE id=?", [
-      req.params.PostID,
+    const { id } = req.params;
+    const [rows] = await pool.query("SELECT * FROM Blog WHERE PostID=?", [
+      req.params.id,
     ]);
 
     if (rows.length <= 0)
