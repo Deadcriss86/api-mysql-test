@@ -1,15 +1,15 @@
 import { Router } from "express";
 import {
   getDataBlog,
-  getDatasBlog,
   updateDataBlog,
   DeleteDataBlog,
   CreateDataBlog,
+  getBlogsWithAuthors,
 } from "../controllers/blog.controller.js";
 
 const router = Router();
 
-router.get("/Blog", getDatasBlog);
+router.get("/Blog", getBlogsWithAuthors);
 
 router.get("/Blog/:id", getDataBlog);
 

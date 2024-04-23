@@ -1,5 +1,42 @@
 import { pool } from "../db.js";
 
+// Función asíncrona para obtener los blogs con información de los autores
+export const getBlogsWithAuthors = async (req, res) => {
+  try {
+    // Realiza la consulta SQL que combina la información de los blogs y los autores
+    const query = `
+      SELECT 
+        b.PostID,
+        b.Title,
+        b.Description AS BlogDescription,
+        b.MainImageURL,
+        b.Content,
+        b.Tags,
+        b.Category,
+        b.Date AS PostDate,
+        a.AuthorID,
+        a.Name AS AuthorName,
+        a.LinkedIn AS AuthorLinkedIn,
+        a.Description AS AuthorDescription,
+        a.PhotoURL AS AuthorPhotoURL
+      FROM 
+        Blog b
+      JOIN 
+      Autores a ON b.AuthorID = a.AuthorID
+    `;
+
+    // Ejecutar la consulta SQL y obtener el resultado
+    const [rows] = await pool.query(query);
+
+    // Devolver el resultado como JSON
+    res.json(rows);
+  } catch (error) {
+    // Manejar los errores
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+// Obtener todos los blogs
 export const getDatasBlog = async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM Blog");
@@ -9,24 +46,41 @@ export const getDatasBlog = async (req, res) => {
   }
 };
 
+// Obtener un blog por su ID
 export const getDataBlog = async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query("SELECT * FROM Blog WHERE PostID=?", [
+    const [blogRows] = await pool.query("SELECT * FROM Blog WHERE PostID=?", [
       req.params.id,
     ]);
 
-    if (rows.length <= 0)
+    if (blogRows.length <= 0)
       return res.status(404).json({
-        message: "Data no found",
+        message: "Data not found",
       });
 
-    res.json(rows[0]);
+    const [authorRows] = await pool.query(
+      "SELECT * FROM Authors WHERE AuthorID=?",
+      [blogRows[0].AuthorID]
+    );
+
+    if (authorRows.length <= 0)
+      return res.status(404).json({
+        message: "Author data not found",
+      });
+
+    const blogData = {
+      ...blogRows[0],
+      author: authorRows[0],
+    };
+
+    res.json(blogData);
   } catch (error) {
     return res.status(500).json({ message: "Something goes wrong" });
   }
 };
 
+// Crear un nuevo blog
 export const CreateDataBlog = async (req, res) => {
   const {
     Title,
@@ -57,13 +111,14 @@ export const CreateDataBlog = async (req, res) => {
   }
 };
 
+// Eliminar un blog por su ID
 export const DeleteDataBlog = async (req, res) => {
   try {
-    const [result] = await pool.query("DELETE FROM Blog WHERE id=?", [
+    const [result] = await pool.query("DELETE FROM Blog WHERE PostID=?", [
       req.params.id,
     ]);
     if (result.affectedRows <= 0) {
-      return res.status(404).json({ message: "Data no found" });
+      return res.status(404).json({ message: "Data not found" });
     }
     res.sendStatus(204);
   } catch (error) {
@@ -71,6 +126,7 @@ export const DeleteDataBlog = async (req, res) => {
   }
 };
 
+// Actualizar un blog por su ID
 export const updateDataBlog = async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,14 +141,16 @@ export const updateDataBlog = async (req, res) => {
     } = req.body;
 
     const [result] = await pool.query(
-      "UPDATE Blog SET Title = IFNULL(?, Title), Description = IFNULL(?, Description), MainImageURL= IFNULL(?, MainImageURL),Content = IFNULL(?, Content), Tags= IFNULL(?, Tags), Category= IFNULL(?, Category), AuthorID= IFNULL(?, AuthorID)  WHERE id = ?",
+      "UPDATE Blog SET Title = IFNULL(?, Title), Description = IFNULL(?, Description), MainImageURL = IFNULL(?, MainImageURL), Content = IFNULL(?, Content), Tags = IFNULL(?, Tags), Category = IFNULL(?, Category), AuthorID = IFNULL(?, AuthorID) WHERE PostID = ?",
       [Title, Description, MainImageURL, Content, Tags, Category, AuthorID, id]
     );
 
     if (result.affectedRows === 0)
-      return res.status(404).json({ message: "data not found" });
+      return res.status(404).json({ message: "Data not found" });
 
-    const [rows] = await pool.query("SELECT * FROM Blog WHERE id = ?", [id]);
+    const [rows] = await pool.query("SELECT * FROM Blog WHERE PostID = ?", [
+      id,
+    ]);
 
     res.json(rows[0]);
   } catch (error) {
