@@ -60,7 +60,7 @@ export const getDataBlog = async (req, res) => {
       });
 
     const [authorRows] = await pool.query(
-      "SELECT * FROM Authors WHERE AuthorID=?",
+      "SELECT * FROM Autores WHERE AuthorID=?",
       [blogRows[0].AuthorID]
     );
 
