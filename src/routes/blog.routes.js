@@ -5,7 +5,6 @@ import {
   updateDataBlog,
   DeleteDataBlog,
   CreateDataBlog,
-  getBlogsWithAuthors,
 } from "../controllers/blog.controller.js";
 
 const router = Router();

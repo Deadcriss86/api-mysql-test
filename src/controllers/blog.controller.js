@@ -1,41 +1,5 @@
 import { pool } from "../db.js";
 
-// Función asíncrona para obtener los blogs con información de los autores
-export const getBlogsWithAuthors = async (req, res) => {
-  try {
-    // Realiza la consulta SQL que combina la información de los blogs y los autores
-    const query = `
-      SELECT 
-        b.PostID,
-        b.Title,
-        b.Description AS BlogDescription,
-        b.MainImageURL,
-        b.Content,
-        b.Tags,
-        b.Category,
-        b.Date AS PostDate,
-        a.AuthorID,
-        a.Name AS AuthorName,
-        a.LinkedIn AS AuthorLinkedIn,
-        a.Description AS AuthorDescription,
-        a.PhotoURL AS AuthorPhotoURL
-      FROM 
-        Blog b
-      JOIN 
-      Autores a ON b.AuthorID = a.AuthorID
-    `;
-
-    // Ejecutar la consulta SQL y obtener el resultado
-    const [rows] = await pool.query(query);
-
-    // Devolver el resultado como JSON
-    res.json(rows);
-  } catch (error) {
-    // Manejar los errores
-    return res.status(500).json({ message: "Something went wrong" });
-  }
-};
-
 // Obtener todos los blogs
 export const getDatasBlog = async (req, res) => {
   try {
