@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getDataBlog,
+  getDatasBlog,
   updateDataBlog,
   DeleteDataBlog,
   CreateDataBlog,
@@ -9,7 +10,7 @@ import {
 
 const router = Router();
 
-router.get("/Blog", getBlogsWithAuthors);
+router.get("/Blog", getDatasBlog);
 
 router.get("/Blog/:id", getDataBlog);
 
